@@ -1,3 +1,5 @@
+> Archived for CORS Unblock deprecation, new version uses it's own browser extension (WAPI)[https://chromewebstore.google.com/detail/wapi/lmjpfcjpoifmnfenlbnmgijkegiddmjg?pli=1]
+
 # WikiPlayground
 Gioco per la riconciliazione delle entità SBN con gli Items Wikidata
 
