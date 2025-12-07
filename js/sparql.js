@@ -112,4 +112,113 @@ const allNoMatchQuery = async () => {
     return query
 }
 
-export { startingQuery, formatQuery, allItemQuery, allEditsQuery, allNoMatchQuery}
+// Contenuto richiesta per aggiornamento proprietà P396
+const claimBodyValue = async (opacList, currentDate) => {
+    
+    let claims = []
+    opacList.forEach(opacEntity => {
+        let claimBody = {
+            "mainsnak": {
+                "snaktype": "value",
+                "property": "P396",
+                "datatype": "external-id",
+                "datavalue": {
+                    "value": opacEntity.Id,
+                    "type": "string"
+                }
+            },
+            "type": "statement",
+            "rank": "normal",
+            "qualifiers": {
+                "P1810": [ // soggetto indicato come
+                    {
+                        "snaktype": "value",
+                        "property": "P1810",
+                        "datavalue": {
+                            "value": opacEntity.Label, // Etichetta SBN
+                            "type": "string"
+                        }
+                    }
+                ]
+            },
+            "references": [
+                {
+                    "snaks": {
+                        "P813": [ // Data di consultazione
+                            {
+                                "snaktype": "value",
+                                "property": "P813",
+                                "datavalue": {
+                                    "value": {
+                                        "time": `+${currentDate}T00:00:00Z`,
+                                        "timezone": 0,
+                                        "before": 0,
+                                        "after": 0,
+                                        "precision": 11, // Precisione al giorno
+                                        "calendarmodel": "http://www.wikidata.org/entity/Q1985727" // Calendario gregoriano
+                                    },
+                                    "type": "time"
+                                }
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+
+        claims.push(claimBody)
+
+    });
+    return claims
+}
+
+// Contenuto richiesta per item senza match sbn 
+const claimBodyNoMatchValue = async (currentDate) => {
+    let claims = []
+    let claimBody = {
+        "mainsnak": {
+            "snaktype": "novalue", // creazione poprietà con valore 'nessun valore'
+            "property": "P396"
+        },
+        "type": "statement",
+        "rank": "normal",
+        "references": [
+            {
+                "snaks": {
+                    "P813": [ // Data di consultazione
+                        {
+                            "snaktype": "value",
+                            "property": "P813",
+                            "datavalue": {
+                                "value": {
+                                    "time": `+${currentDate}T00:00:00Z`,
+                                    "timezone": 0,
+                                    "before": 0,
+                                    "after": 0,
+                                    "precision": 11, // Precisione al giorno
+                                    "calendarmodel": "http://www.wikidata.org/entity/Q1985727" // Calendario gregoriano
+                                },
+                                "type": "time"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    }
+
+    claims.push(claimBody)
+
+    return claims
+}
+
+
+export { 
+    startingQuery, 
+    formatQuery, 
+    allItemQuery, 
+    allEditsQuery, 
+    allNoMatchQuery, 
+    claimBodyValue, 
+    claimBodyNoMatchValue 
+}
