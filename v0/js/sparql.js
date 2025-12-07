@@ -1,45 +1,32 @@
-const startingQuery = async () => {
-    let query = `SELECT ?item
-WHERE {
-
-    # Filtra gli item con cittadinanza italiana (Q38) o italiana (Q172579)
-    VALUES ?v { wd:Q172579 wd:Q38 }
-    ?item wdt:P27 ?v ;  # P27 = paese di cittadinanza
-          wdt:P214 [] . # P214 = identificativo VIAF
-
-    # Filtra per etichette in italiano
-    ?item rdfs:label ?itemLabel . FILTER(LANG(?itemLabel) = "it")
-
-}
-LIMIT 20
-
-# Alla query verranno aggiunti automaticamente in seguenti filtri:
-
-# Esclusione degli item che hanno una proprietà P396
-# FILTER NOT EXISTS { ?item wdt:P396 [] . }
-
-# Esclusione degli item che hanno una proprietà P396 uguale a novalue
-# FILTER NOT EXISTS { ?item a wdno:P396 . }
-    `
-    return query
+// Ottieni numero casuale per quesry SPARQL
+const getRandomInt = async (min, max) => {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-const formatQuery = async (params, limit) => {
-    let query = `SELECT DISTINCT ?item ?itemLabel ?itemDescription ?itemAltLabel ?image ?statementCount ?sitelinkCount ?lastModified
-WHERE
-{
-    ${params}
+const randomItemQuery = async () => {
+    let i = await getRandomInt(1, 10000) // Numero randomico per offset (ORDER BY RAND() rallenta di molto la query)
+    let query = `
+    SELECT DISTINCT ?item ?itemLabel
+    WHERE
+    {
+        # Filtra gli item con cittadinanza italiana (Q38) o italiana (Q172579)
+        VALUES ?v { wd:Q172579 wd:Q38 }
+        ?item wdt:P27 ?v ;  # P27 = paese di cittadinanza
+                wdt:P214 [] . # P214 = identificativo VIAF
 
-    OPTIONAL { ?item schema:description ?itemDescription . FILTER(LANG(?itemDescription) = "it") }
-    OPTIONAL { ?item skos:altLabel ?itemAltLabel . FILTER(LANG(?itemAltLabel) = "it") }
-    OPTIONAL { ?item wdt:P18 ?image . } # P18 = immagine
-    ?item wikibase:statements ?statementCount .
-    ?item wikibase:sitelinks ?sitelinkCount .
-    ?item schema:dateModified ?lastModified .
-    FILTER NOT EXISTS { ?item wdt:P396 [] . }
-    FILTER NOT EXISTS { ?item a wdno:P396 . }
-}
-LIMIT ${limit}   
+        # Filtra per etichette in italiano
+        ?item rdfs:label ?itemLabel . FILTER(LANG(?itemLabel) = "it")
+
+        # Esclude gli item che hanno una proprietà P396
+        FILTER NOT EXISTS { ?item wdt:P396 [] . }
+
+        # Esclude gli item che hanno una proprietà P396 uguale a novalue
+        FILTER NOT EXISTS { ?item a wdno:P396 . }
+    }
+    OFFSET ${i}
+    LIMIT 1    
     `;
     return query
 }
@@ -112,4 +99,4 @@ const allNoMatchQuery = async () => {
     return query
 }
 
-export { startingQuery, formatQuery, allItemQuery, allEditsQuery, allNoMatchQuery}
+export { randomItemQuery, allItemQuery, allEditsQuery, allNoMatchQuery}
